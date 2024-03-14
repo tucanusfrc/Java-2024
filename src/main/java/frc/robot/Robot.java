@@ -28,13 +28,21 @@ public class Robot extends TimedRobot {
    */
   private XboxController m_leftStick;
   private XboxController m_rightStick;
+  public double leftaxis = m_leftStick.getLeftTriggerAxis();
+  public double rightaxix = m_leftStick.getRightTriggerAxis();
   private CANSparkMax m_leftMotor;
   private CANSparkMax m_rightMotor;
   private CANSparkMax m_leftMotorfollow;
   private CANSparkMax m_rightMotorfollow;
+  private CANSparkMax m_shooteresquerdo;
+  private CANSparkMax m_shooterdireito;
+  private CANSparkMax m_intakegirar;
+  private CANSparkMax m_intakepegajoga;
+  private CANSparkMax m_elevadordireito;
+  private CANSparkMax m_elevadoresquerdo;
+
   private DifferentialDrive m_myRobot;
   private static final SparkMaxAlternateEncoder.Type kAltEncType = SparkMaxAlternateEncoder.Type.kQuadrature;
-  private static final int kCanID = 1;
   private static final int kCPR = 8192;
   private  RelativeEncoder m_alternateEncoder;
   public double kP, kD, kIz, kMaxOutput, kMinOutput;
@@ -43,10 +51,16 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     // kCANID é o lugar onde você coloca os valores da rede can de cada motor;
-    m_leftMotor = new CANSparkMax(kCanID, MotorType.kBrushless);
-    m_rightMotor = new CANSparkMax(kCanID, MotorType.kBrushless);
-    m_leftMotorfollow = new CANSparkMax(kCanID, MotorType.kBrushless);
-    m_rightMotorfollow = new CANSparkMax(kCanID, MotorType.kBrushless);
+    m_leftMotor = new CANSparkMax(1, MotorType.kBrushless);
+    m_rightMotor = new CANSparkMax(3, MotorType.kBrushless);
+    m_leftMotorfollow = new CANSparkMax(2, MotorType.kBrushless);
+    m_rightMotorfollow = new CANSparkMax(4, MotorType.kBrushless);
+    m_shooteresquerdo = new CANSparkMax(5,MotorType.kBrushless);
+    m_shooterdireito = new CANSparkMax(6,MotorType.kBrushless);
+    m_intakegirar = new CANSparkMax(7,MotorType.kBrushless);
+    m_intakepegajoga = new CANSparkMax(8,MotorType.kBrushless);
+    m_elevadordireito = new CANSparkMax(9,MotorType.kBrushless);
+    m_elevadoresquerdo = new CANSparkMax(10,MotorType.kBrushless);
 
     m_leftMotor.restoreFactoryDefaults();
     m_rightMotor.restoreFactoryDefaults();
@@ -96,8 +110,23 @@ public class Robot extends TimedRobot {
     m_leftMotor.set(m_leftMotor.get());
     m_rightMotor.set(m_rightMotor.get());
 
-    if (m_leftStick.getRawButton(1)) {
-      
+    if (m_leftStick.getAButton()) {
+      m_intakepegajoga.set(0.5);
+    } else if (m_leftStick.getBButton()) {
+      m_intakepegajoga.set(-0.5);
+    } else if (m_leftStick.getXButton()) {
+      m_shooteresquerdo.set(-0.5);
+      m_shooterdireito.set(0.5);
+    } else if (m_leftStick.getYButton()) {
+      m_intakegirar.set(0.3);
+    } else if (m_leftStick.getLeftBumperPressed()) {
+      m_elevadoresquerdo.set(0.3);
+    } else if (m_leftStick.getRightBumperPressed()) {
+      m_elevadoresquerdo.set(-0.3);
+    } else if (leftaxis > 0) {
+      m_elevadordireito.set(leftaxis);
+    } else if (rightaxix > 0) {
+      m_elevadordireito.set(-rightaxix);
     }
 
     SmartDashboard.putNumber("Encoder Position", m_alternateEncoder.getPosition());
