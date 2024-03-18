@@ -27,52 +27,96 @@ public class Robot extends TimedRobot {
    * initialization code.
    */
   private XboxController m_leftStick;
-  private XboxController m_rightStick;
+  private XboxController m_guitarra;
   public double leftaxis = m_leftStick.getLeftTriggerAxis();
   public double rightaxix = m_leftStick.getRightTriggerAxis();
-  private CANSparkMax m_leftMotor;
-  private CANSparkMax m_rightMotor;
-  private CANSparkMax m_leftMotorfollow;
-  private CANSparkMax m_rightMotorfollow;
-  private CANSparkMax m_shooteresquerdo;
-  private CANSparkMax m_shooterdireito;
-  private CANSparkMax m_intakegirar;
-  private CANSparkMax m_intakepegajoga;
-  private CANSparkMax m_elevadordireito;
-  private CANSparkMax m_elevadoresquerdo;
+  public CANSparkMax m_leftMotor;
+  public CANSparkMax m_rightMotor;
+  public CANSparkMax m_leftMotorfollow;
+  public CANSparkMax m_rightMotorfollow;
+  public CANSparkMax m_shooteresquerdo;
+  public CANSparkMax m_shooterdireito;
+  public CANSparkMax m_intakegirar;
+  public CANSparkMax m_intakepegajoga;
+  public CANSparkMax m_elevadordireito;
+  public CANSparkMax m_elevadoresquerdo;
 
+  public void modo_reto() {
+    if ((leftaxis > 0) && (rightaxix == 0) && (m_leftStick.getLeftY() < 0.100) && (m_leftStick.getLeftX() > -0.100))  {
+      m_leftMotor.set(leftaxis);
+      m_rightMotor.set(-leftaxis);
+  } else if ((rightaxix) > 0 && (leftaxis == 0)) {
+      m_leftMotor.set(-rightaxix);
+      m_rightMotor.set(rightaxix);
+    }
+  }
+  public void elevadores() {
+    if (m_guitarra.getRawButtonPressed(3) && m_guitarra.getRawButtonPressed(8) ) {
+      m_elevadoresquerdo.set(-1);
+  } else if (m_guitarra.getRawButtonPressed(2) && m_guitarra.getRawButtonPressed(8) ) {
+      m_elevadordireito.set(-1); 
+    } else if (m_guitarra.getRawButtonPressed(1) && m_guitarra.getRawButtonPressed(8) ) {
+      m_elevadoresquerdo.set(1);
+    } else if (m_guitarra.getRawButtonPressed(0) && m_guitarra.getRawButtonPressed(8)) {
+      m_elevadordireito.set(1); 
+    } }
+
+  public void intake() {
+    if (m_guitarra.getAButton() && (m_guitarra.getRawButtonReleased(8))) {
+      m_intakepegajoga.set(0.5);
+    } else if (m_guitarra.getBButton() && (m_guitarra.getRawButtonReleased(8))) {
+      m_intakepegajoga.set(-0.5);
+  } else if (m_guitarra.getYButton() && (m_guitarra.getRawButtonReleased(8))) {
+      m_intakegirar.set(0.3); 
+    } else if (m_guitarra.getXButton() && (m_guitarra.getRawButtonReleased(8))) {
+      m_intakegirar.set(-0.3);
+    } }
+
+    public void shooter() {
+      if (m_guitarra.getLeftBumperPressed() && (m_guitarra.getRawButtonReleased(8))) {
+      m_shooteresquerdo.set(-0.5);
+      m_shooterdireito.set(0.5);
+    } }
+
+    public void tankDrive() {
+      m_myRobot.tankDrive(m_leftStick.getLeftY() * 0.7, m_leftStick.getRightY() * 0.7);
+      m_leftMotor.set(m_leftMotor.get());
+      m_rightMotor.set(m_rightMotor.get());
+    }
+    
   private DifferentialDrive m_myRobot;
   private static final SparkMaxAlternateEncoder.Type kAltEncType = SparkMaxAlternateEncoder.Type.kQuadrature;
   private static final int kCPR = 8192;
   private  RelativeEncoder m_alternateEncoder;
   public double kP, kD, kIz, kMaxOutput, kMinOutput;
 
-
-  @Override
-  public void robotInit() {
-    // kCANID é o lugar onde você coloca os valores da rede can de cada motor;
+  public void variáveis() {
     m_leftMotor = new CANSparkMax(1, MotorType.kBrushless);
     m_rightMotor = new CANSparkMax(3, MotorType.kBrushless);
     m_leftMotorfollow = new CANSparkMax(2, MotorType.kBrushless);
     m_rightMotorfollow = new CANSparkMax(4, MotorType.kBrushless);
-    m_shooteresquerdo = new CANSparkMax(5,MotorType.kBrushless);
-    m_shooterdireito = new CANSparkMax(6,MotorType.kBrushless);
+    m_shooteresquerdo = new CANSparkMax(5,MotorType.kBrushed); //Talvez kBrusheless
+    m_shooterdireito = new CANSparkMax(6,MotorType.kBrushed); //Talvez kBrusheless
     m_intakegirar = new CANSparkMax(7,MotorType.kBrushless);
     m_intakepegajoga = new CANSparkMax(8,MotorType.kBrushless);
     m_elevadordireito = new CANSparkMax(9,MotorType.kBrushless);
     m_elevadoresquerdo = new CANSparkMax(10,MotorType.kBrushless);
-
-    m_leftMotor.restoreFactoryDefaults();
-    m_rightMotor.restoreFactoryDefaults();
-    //função para coletar os valores diferenciais dos motores;
-    m_myRobot = new DifferentialDrive(m_leftMotor, m_rightMotor);
-    //a função para controles de xbox é melhor que a do joystick normal, por organização e por praticidade;
-    m_leftStick = new XboxController(5);
-    m_rightStick = new XboxController(1);
-    // funções para
     m_rightMotorfollow.follow(m_rightMotor);
     m_leftMotorfollow.follow(m_leftMotor);
+    m_myRobot = new DifferentialDrive(m_leftMotor, m_rightMotor);
+    m_leftStick = new XboxController(0);
+    m_rightMotorfollow.follow(m_rightMotor);
+    m_leftMotorfollow.follow(m_leftMotor);
+    m_leftMotor.restoreFactoryDefaults();
+    m_rightMotor.restoreFactoryDefaults();
     m_alternateEncoder = m_rightMotor.getAlternateEncoder(kAltEncType, kCPR);
+  }
+
+  @Override
+  public void robotInit() {
+    variáveis(); //Revisar
+
+    m_rightMotor.getInverted();
 
     if(m_leftMotor.setIdleMode(CANSparkMax.IdleMode.kCoast) != REVLibError.kOk){
       SmartDashboard.putString("Idle Mode", "Error");
@@ -106,29 +150,12 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
-    m_myRobot.tankDrive(m_leftStick.getLeftY() * 0.7, m_rightStick.getRightY() * 0.7);
-    m_leftMotor.set(m_leftMotor.get());
-    m_rightMotor.set(m_rightMotor.get());
-
-    if (m_leftStick.getAButton()) {
-      m_intakepegajoga.set(0.5);
-    } else if (m_leftStick.getBButton()) {
-      m_intakepegajoga.set(-0.5);
-    } else if (m_leftStick.getXButton()) {
-      m_shooteresquerdo.set(-0.5);
-      m_shooterdireito.set(0.5);
-    } else if (m_leftStick.getYButton()) {
-      m_intakegirar.set(0.3);
-    } else if (m_leftStick.getLeftBumperPressed()) {
-      m_elevadoresquerdo.set(0.3);
-    } else if (m_leftStick.getRightBumperPressed()) {
-      m_elevadoresquerdo.set(-0.3);
-    } else if (leftaxis > 0) {
-      m_elevadordireito.set(leftaxis);
-    } else if (rightaxix > 0) {
-      m_elevadordireito.set(-rightaxix);
-    }
-
+    tankDrive();
+    modo_reto();
+    elevadores();
+    intake();
+    shooter();
+    
     SmartDashboard.putNumber("Encoder Position", m_alternateEncoder.getPosition());
 
     SmartDashboard.putNumber("Encoder Velocity", m_alternateEncoder.getVelocity());
